@@ -14,5 +14,10 @@ public class PotteryEditor extends JavaPlugin {
 		manager = new EditorManager(this);
 		getServer().getPluginManager().registerEvents(manager, this);
 		CoreCommand.registerCommand(this, new CMDPotteryEditor(this));
+		getLogger().info("PotteryEditor has enabled.");
+	}
+	@Override
+	public void onDisable(){
+		getLogger().info("Disabling");
 	}
 }

@@ -1,17 +1,21 @@
 package me.antritus.potteryeditor.editor;
 
-import me.antritus.potteryeditor.astrolminiapi.ColorUtils;
-import org.bukkit.Bukkit;
+import me.antritus.potteryeditor.astrolminiapi.InventoryUtils;
 import org.bukkit.Material;
 import org.bukkit.block.DecoratedPot;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import org.jetbrains.annotations.NotNull;
 
 
-public class EditorGUI extends AbstractEditorGUI{
+public class EditorGUI extends AbstractEditorGUI implements InventoryHolder {
+	public final CraftingPreviewMenu previewMenu;
 	public EditorGUI(Player player) {
 		super(player);
+		previewMenu = new CraftingPreviewMenu(this);
 	}
 
 	public int convert(DecoratedPot.Side side){
@@ -28,16 +32,23 @@ public class EditorGUI extends AbstractEditorGUI{
 	}
 	@Override
 	public void updateInventory() {
-		int invSize = 54;
 		if (inventory == null) {
-			inventory = Bukkit.createInventory(getPlayer(), invSize, ColorUtils.translateComp("Pottery Editor"));
+			inventory = InventoryUtils.createInventory(this, "Pottery Editor", 6);
+			InventoryUtils.InventoryPattern pattern = new InventoryUtils.InventoryPattern(
+					"aaaaaaaaa",
+					"aaaaaaaaa",
+					"aaaaaaaaa",
+					"xxxxxxxxx",
+					"xxxxxxxxx",
+					"xxxxxxxxx"
+			);
+			pattern.setItem('x', BACKGROUND);
+			pattern.update(inventory);
 			SHERDS.forEach(inventory::addItem);
-			for (int i = 27; i < invSize; i++) {
-				inventory.setItem(i, BACKGROUND);
-			}
 
 			inventory.setItem(30, BUTTON_BUILD);
 			inventory.setItem(32, BUTTON_CLEAR);
+			inventory.setItem(49, BUTTON_PREVIEW_CRAFT);
 		}
 
 		sherds.putIfAbsent(0, null);
@@ -79,5 +90,10 @@ public class EditorGUI extends AbstractEditorGUI{
 	@Override
 	public void open() {
 		getPlayer().openInventory(inventory);
+	}
+
+	@Override
+	public @NotNull Inventory getInventory() {
+		return inventory;
 	}
 }

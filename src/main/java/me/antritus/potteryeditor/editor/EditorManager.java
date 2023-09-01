@@ -9,6 +9,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -43,14 +44,18 @@ public class EditorManager implements Listener {
 	}
 
 	@EventHandler
+	public void onLeave(PlayerQuitEvent event){
+		guis.remove(event.getPlayer().getUniqueId());
+	}
+
+	@EventHandler
 	public void onInteract(InventoryClickEvent event){
 		Inventory inventory = event.getClickedInventory();
 		if (inventory == null){
 			return;
 		}
 		Player player = (Player) event.getWhoClicked();
-		AbstractEditorGUI gui = guis.get(event.getWhoClicked().getUniqueId());
-		if (gui.inventory.equals(event.getInventory()) && inventory.getType() != InventoryType.PLAYER) {
+		if (inventory.getHolder() instanceof EditorGUI gui) {
 			event.setCancelled(true);
 			event.setResult(Event.Result.DENY);
 			ItemStack itemStack = event.getCurrentItem();
@@ -58,6 +63,10 @@ public class EditorManager implements Listener {
 				return;
 			}
 			if (event.getSlot()==30){
+				if (!event.getWhoClicked().hasPermission("potteryeditor.build")){
+					event.getWhoClicked().sendRichMessage("<red>You do not have enough permissions to build decorated pots!");
+					return;
+				}
 				ItemStack item = new ItemStack(Material.DECORATED_POT);
 				BlockStateMeta meta = (BlockStateMeta) item.getItemMeta();
 				DecoratedPot clone = (DecoratedPot) ((BlockStateMeta) (event.getInventory().getItem(40).getItemMeta())).getBlockState();
@@ -89,29 +98,56 @@ public class EditorManager implements Listener {
 				gui.updateInventory();
 				return;
 			}
+			if (event.getSlot()==49){
+				if (!event.getWhoClicked().hasPermission("potteryeditor.preview")){
+					event.getWhoClicked().sendRichMessage("<red>You do not have enough permissions to preview this decorated pot's crafting recipe!");
+					return;
+				}
+				gui.previewMenu.updateInventory();
+				player.openInventory(gui.previewMenu.getInventory());
+				return;
+			}
 			if (itemStack.getType().name().endsWith("_POTTERY_SHERD")){
 				if (event.getSlot()<=26){
-					if (event.getClick()==ClickType.NUMBER_KEY){
-						int hotbarButton = event.getHotbarButton();
-						if (hotbarButton>3){
-							return;
-						}
-						gui.sherds.put(hotbarButton, itemStack.getType());
-						gui.updateInventory();
-					}else {
-						int slot = -1;
-						if (gui.sherds.get(0) == null)
-							slot = 0;
-						else if (gui.sherds.get(1) == null)
-							slot = 1;
-						else if (gui.sherds.get(2) == null)
-							slot = 2;
-						else if (gui.sherds.get(3) == null)
-							slot = 3;
-						gui.sherds.put(slot, itemStack.getType());
-						gui.updateInventory();
+					//if (event.getClick()==ClickType.NUMBER_KEY){
+					//	int hotbarButton = event.getHotbarButton();
+					//	if (hotbarButton>3){
+					//		return;
+					//	}
+					//	gui.sherds.put(hotbarButton, itemStack.getType());
+					//	gui.updateInventory();
+					//}else {
+					//	int slot = -1;
+					//	if (gui.sherds.get(0) == null)
+					//		slot = 0;
+					//	else if (gui.sherds.get(1) == null)
+					//		slot = 1;
+					//	else if (gui.sherds.get(2) == null)
+					//		slot = 2;
+					//	else if (gui.sherds.get(3) == null)
+					//		slot = 3;
+					//	gui.sherds.put(slot, itemStack.getType());
+					//	gui.updateInventory();
+					//}
+					int slot = switch (event.getClick()){
+						case LEFT -> 0;
+						case RIGHT -> 1;
+						case SHIFT_LEFT -> 2;
+						case SHIFT_RIGHT -> 3;
+						default -> -1;
+					};
+					if (slot==-1){
+						return;
 					}
+					gui.sherds.put(slot, itemStack.getType());
+					gui.updateInventory();
+					return;
 				}
+			}
+		} else if (event.getInventory().getHolder() instanceof CraftingPreviewMenu menu){
+			event.setCancelled(true);
+			if (event.getSlot()==22){
+				event.getWhoClicked().openInventory(guis.get(player.getUniqueId()).inventory);
 			}
 		}
 	}

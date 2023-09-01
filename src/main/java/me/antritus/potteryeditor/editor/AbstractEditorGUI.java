@@ -23,15 +23,15 @@ public abstract class AbstractEditorGUI {
 	public static final ItemStack BACKGROUND_POTTERY = new ItemStack(Material.DECORATED_POT);
 	public static final ItemStack BUTTON_CLEAR = new ItemStack(Material.RED_DYE);
 	public static final ItemStack BUTTON_BUILD = new ItemStack(Material.LIME_DYE);
+	public static final ItemStack BUTTON_PREVIEW_CRAFT = new ItemStack(Material.CRAFTING_TABLE);
 	public static final List<ItemStack> SHERDS = new ArrayList<>();
 	protected static final List<Component> SHERD_LORE = new ArrayList<>();
 
 	static {
-		SHERD_LORE.add(ColorUtils.translateComp("<white>Set as <aqua>FRONT</aqua> side:</white> <aqua><translate:key.hotbar.1></aqua>"));
-		SHERD_LORE.add(ColorUtils.translateComp("<white>Set as <aqua>LEFT</aqua> side:</white> <aqua><translate:key.hotbar.2></aqua>"));
-		SHERD_LORE.add(ColorUtils.translateComp("<white>Set as <aqua>RIGHT</aqua> side:</white> <aqua><translate:key.hotbar.3></aqua>"));
-		SHERD_LORE.add(ColorUtils.translateComp("<white>Set as <aqua>BACK</aqua> side:</white> <aqua><translate:key.hotbar.4></aqua>"));
-		SHERD_LORE.add(ColorUtils.translateComp("<white>Quick Add: CLICK"));
+		SHERD_LORE.add(ColorUtils.translateComp("<gray>Set as <green>front</green> side:</gray> <green>LEFT"));
+		SHERD_LORE.add(ColorUtils.translateComp("<gray>Set as <green>left</green> side:</gray> <green>RIGHT"));
+		SHERD_LORE.add(ColorUtils.translateComp("<gray>Set as <green>right</green> side:</gray> <green>SHIFT<gray>+<green>LEFT"));
+		SHERD_LORE.add(ColorUtils.translateComp("<gray>Set as <green>back</green> side:</gray> <green>SHIFT<gray>+<green>RIGHT"));
 
 		Arrays.stream(Material.values()).filter(material->material.name().toUpperCase().endsWith("_POTTERY_SHERD")).forEachOrdered(material-> {
 					ItemStack itemStack = new ItemStack(material);
@@ -74,6 +74,14 @@ public abstract class AbstractEditorGUI {
 		meta.addItemFlags(ItemFlag.values());
 		BUTTON_CLEAR.setItemMeta(meta);
 
+		meta = BUTTON_PREVIEW_CRAFT.getItemMeta();
+		name = ColorUtils.translateComp("<yellow>Preview Recipe");
+		meta.displayName(name);
+		meta.lore(List.of(
+				ColorUtils.translateComp("<gray>Click to preview crafting recipe.")
+		));
+		meta.addItemFlags(ItemFlag.values());
+		BUTTON_PREVIEW_CRAFT.setItemMeta(meta);
 	}
 	static {
 		BUTTON_BUILD.editMeta((meta)->{
